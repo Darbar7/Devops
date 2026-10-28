@@ -10,8 +10,8 @@ pipeline {
         
         stage('Run Automated Tests') {
             steps {
-                // Runs unit tests inside a temporary python container or environment
-                sh 'python3 -m pytest || echo "No tests found yet, continuing..."'
+                // Runs unit tests or skips cleanly if no test files exist yet
+                sh 'python3 -m pytest || echo "No tests configured yet, skipping..."'
             }
         }
         

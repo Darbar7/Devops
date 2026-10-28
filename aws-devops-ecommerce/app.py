@@ -82,9 +82,10 @@ def login():
     if request.method == 'POST':
         email = request.form['email']
         password = request.form['password']
-        if email == "admin@devops.com" and password == "admin123":
-            session['user_name'] = "DevOps Admin"
-            flash('Welcome back, Admin!', 'success')
+        # Updated admin credentials
+        if email == "admin@darbar.com" and password == "Aug@2003":
+            session['user_name'] = "Darbar Admin"
+            flash('Welcome back, Darbar Admin!', 'success')
             return redirect(url_for('index'))
         else:
             flash('Invalid email or password!', 'danger')

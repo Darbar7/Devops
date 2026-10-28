@@ -82,7 +82,6 @@ def login():
     if request.method == 'POST':
         email = request.form['email']
         password = request.form['password']
-        # Updated admin credentials
         if email == "admin@darbar.com" and password == "Aug@2003":
             session['user_name'] = "Darbar Admin"
             flash('Welcome back, Darbar Admin!', 'success')
@@ -107,8 +106,11 @@ def profile():
         return redirect(url_for('login'))
     return render_template('profile.html', user_name=session.get('user_name'))
 
-@app.route('/forgot-password')
+@app.route('/forgot-password', methods=['GET', 'POST'])
 def forgot_password():
+    if request.method == 'POST':
+        flash('Password reset instructions have been sent to your email.', 'info')
+        return redirect(url_for('login'))
     return render_template('forgot_password.html')
 
 if __name__ == '__main__':

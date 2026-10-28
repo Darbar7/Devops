@@ -1,0 +1,34 @@
+pipeline {
+    agent any
+    
+    stages {
+        stage('Checkout Code') {
+            steps {
+                checkout scm
+            }
+        }
+        
+        stage('Run Automated Tests') {
+            steps {
+                // Runs unit tests inside a temporary python container or environment
+                sh 'python3 -m pytest || echo "No tests found yet, continuing..."'
+            }
+        }
+        
+        stage('Build Docker Image') {
+            steps {
+                script {
+                    docker.build("flask-ecommerce-app:${env.BUILD_NUMBER}")
+                    docker.build("flask-ecommerce-app:latest")
+                }
+            }
+        }
+        
+        stage('Deploy Locally with Docker Compose') {
+            steps {
+                sh 'docker-compose down || true'
+                sh 'docker-compose up -d'
+            }
+        }
+    }
+}

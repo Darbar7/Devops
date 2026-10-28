@@ -3,7 +3,7 @@ import psycopg2
 from flask import Flask, render_template, request, redirect, url_for, session, flash
 
 app = Flask(__name__)
-app.secret_key = 'super_secret_devops_key'  # Needed for session and flash messages
+app.secret_key = 'super_secret_devops_key'  # Needed for sessions and flash messages
 
 def get_db_connection():
     database_url = os.environ.get('DATABASE_URL', 'postgresql://myuser:mypassword@db:5432/mydatabase')
@@ -38,10 +38,13 @@ def init_db():
     cur.close()
     conn.close()
 
-try:
-    init_db()
-except Exception as e:
-    print(f"Skipping init_db: {e}")
+# Ensure tables are created on startup using app context
+with app.app_context():
+    try:
+        init_db()
+        print("Database tables initialized successfully!")
+    except Exception as e:
+        print(f"Error initializing database: {e}")
 
 @app.route('/')
 def index():
@@ -71,7 +74,6 @@ def index():
     cur.close()
     conn.close()
     
-    # Get user session name if logged in
     user_name = session.get('user_name', None)
     return render_template('index.html', products=products, categories=categories, user_name=user_name)
 
@@ -80,7 +82,6 @@ def login():
     if request.method == 'POST':
         email = request.form['email']
         password = request.form['password']
-        # Simple mock login check (In production, hash passwords!)
         if email == "admin@devops.com" and password == "admin123":
             session['user_name'] = "DevOps Admin"
             flash('Welcome back, Admin!', 'success')

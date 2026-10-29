@@ -1,5 +1,5 @@
 services:
-  # Your existing PostgreSQL Database
+  # PostgreSQL Database for CloudMart
   db:
     image: postgres:15-alpine
     environment:
@@ -11,7 +11,7 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
-  # Your existing CloudMart Flask App
+  # CloudMart Flask App
   web:
     build: .
     ports:
@@ -21,16 +21,16 @@ services:
     depends_on:
       - db
 
-  # New Jenkins Service (using port 8081 to avoid conflicts)
+  # Jenkins Server (Latest LTS, mapped to 8081 and 50001)
   jenkins:
     image: jenkins/jenkins:lts
     restart: unless-stopped
     ports:
       - "8081:8080"
-      - "50000:50000"
+      - "50001:50000"
     volumes:
       - jenkins_home:/var/jenkins_home
-      - /var/run/docker.sock:/var/run/docker.sock  # Allows Jenkins to trigger docker commands
+      - /var/run/docker.sock:/var/run/docker.sock
 
 volumes:
   postgres_data:

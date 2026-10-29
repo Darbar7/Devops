@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   # Your existing PostgreSQL Database
   db:
@@ -23,12 +21,12 @@ services:
     depends_on:
       - db
 
-  # New Jenkins Service (runs the latest LTS version to prevent plugin errors)
+  # New Jenkins Service (using port 8081 to avoid conflicts)
   jenkins:
     image: jenkins/jenkins:lts
     restart: unless-stopped
     ports:
-      - "8080:8080"
+      - "8081:8080"
       - "50000:50000"
     volumes:
       - jenkins_home:/var/jenkins_home

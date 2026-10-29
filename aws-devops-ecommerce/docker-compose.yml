@@ -1,31 +1,39 @@
+version: '3.8'
+
 services:
+  # Your existing PostgreSQL Database
   db:
     image: postgres:15-alpine
     environment:
-      POSTGRES_USER: myuser
-      POSTGRES_PASSWORD: mypassword
-      POSTGRES_DB: mydatabase
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: cloudmart
     ports:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
+  # Your existing CloudMart Flask App
   web:
     build: .
     ports:
       - "5000:5000"
     environment:
-      - DATABASE_URL=postgresql://myuser:mypassword@db:5432/mydatabase
-      - DB_HOST=db
-      - DB_USER=myuser
-      - DB_PASSWORD=mypassword
-      - DB_NAME=mydatabase
-      - POSTGRES_HOST=db
-      - POSTGRES_USER=myuser
-      - POSTGRES_PASSWORD=mypassword
-      - POSTGRES_DB=mydatabase
+      - DATABASE_URL=postgresql://postgres:password@db:5432/cloudmart
     depends_on:
       - db
 
+  # New Jenkins Service (runs the latest LTS version to prevent plugin errors)
+  jenkins:
+    image: jenkins/jenkins:lts
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+      - "50000:50000"
+    volumes:
+      - jenkins_home:/var/jenkins_home
+      - /var/run/docker.sock:/var/run/docker.sock  # Allows Jenkins to trigger docker commands
+
 volumes:
   postgres_data:
+  jenkins_home:

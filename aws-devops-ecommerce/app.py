@@ -16,8 +16,9 @@ pipeline {
         stage('Build Docker Image') {
             steps {
                 script {
-                    // Build the web and db containers using docker-compose
-                    sh 'docker-compose build'
+                    dir('aws-devops-ecommerce') {
+                        sh 'docker-compose build'
+                    }
                 }
             }
         }
@@ -25,10 +26,10 @@ pipeline {
         stage('Run Tests / Validation') {
             steps {
                 script {
-                    // Spin up containers in the background to verify health
-                    sh 'docker-compose up -d'
-                    // Add any test scripts or health checks here
-                    sh 'curl -f http://localhost:5000 || exit 1'
+                    dir('aws-devops-ecommerce') {
+                        sh 'docker-compose up -d'
+                        sh 'curl -f http://localhost:5000 || exit 1'
+                    }
                 }
             }
         }
@@ -36,8 +37,9 @@ pipeline {
         stage('Cleanup') {
             steps {
                 script {
-                    // Clean up test containers after validation
-                    sh 'docker-compose down'
+                    dir('aws-devops-ecommerce') {
+                        sh 'docker-compose down'
+                    }
                 }
             }
         }

@@ -1,34 +1,24 @@
+version: '3.8'
+
 services:
+  db:
+    image: postgres:16
+    container_name: aws-devops-ecommerce-db-1
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: ecommerce
+    ports:
+      - "5432:5432"
+
   app:
     build: .
+    image: aws-devops-ecommerce-app:latest
+    container_name: aws-devops-ecommerce-app-1
     ports:
       - "5000:5000"
     environment:
-      - DB_NAME=todo_db
-      - DB_USER=postgres
-      - DB_PASSWORD=mysecretpassword
-      - PYTHONUNBUFFERED=1
+      - DATABASE_URL=postgresql://postgres:password@db:5432/ecommerce
     depends_on:
       - db
-    networks:
-      - todo-network
-
-  db:
-    image: postgres:16
-    ports:
-      - "5432:5432"
-    environment:
-      - POSTGRES_DB=todo_db
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=mysecretpassword
-    volumes:
-      - pgdata:/var/lib/postgresql/data
-    networks:
-      - todo-network
-
-volumes:
-  pgdata:
-
-networks:
-  todo-network:
-    driver: bridge
+      

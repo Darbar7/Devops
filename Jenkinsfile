@@ -8,8 +8,8 @@ pipeline {
         }
         stage('Build Docker Image') {
             steps {
-                sh 'ls -la'
-                sh 'docker build -t aws-devops-ecommerce-app:latest .'
+                // Build specifying the subfolder path
+                sh 'docker build -t aws-devops-ecommerce-app:latest ./aws-devops-ecommerce'
             }
         }
         stage('Run Unit & Integration Tests') {
@@ -20,7 +20,8 @@ pipeline {
     }
     post {
         always {
-            sh 'docker compose down || true'
+            // Point docker-compose to the subfolder config file
+            sh 'docker compose -f ./aws-devops-ecommerce/docker-compose.yml down || true'
         }
         success {
             echo 'Pipeline completed successfully!'

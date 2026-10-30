@@ -1,80 +1,59 @@
 import os
 import time
-import psycopg2
 from flask import Flask, render_template, request, redirect, url_for
+import psycopg2
 
 app = Flask(__name__)
 
-# Database connection helper with retry logic for startup
+# Get database URL from environment variable (provided by docker-compose)
+DATABASE_URL = os.environ.get('DATABASE_URL', 'postgresql://postgres:password@db:5432/echecommerce')
+
 def get_db_connection():
     retries = 10
     while retries > 0:
         try:
-            conn = psycopg2.connect(
-                host='db',
-                database=os.environ.get('DB_NAME', 'todo_db'),
-                user=os.environ.get('DB_USER', 'postgres'),
-                password=os.environ.get('DB_PASSWORD', 'mysecretpassword')
-            )
+            conn = psycopg2.connect(DATABASE_URL)
             return conn
-        except psycopg2.OperationalError:
+        except psycopg2.OperationalError as e:
             retries -= 1
             print(f"Database not ready. Retrying... ({10 - retries}/10)")
             time.sleep(3)
     raise Exception("Could not connect to the database")
 
-# Initialize database table
-def init_db():
+@app.route('/')
+def index():
     try:
         conn = get_db_connection()
         cur = conn.cursor()
+        # Example query - ensuring table exists or fetching items
         cur.execute('''
-            CREATE TABLE IF NOT EXISTS todos (
+            CREATE TABLE IF NOT EXISTS products (
                 id SERIAL PRIMARY KEY,
-                task TEXT NOT NULL,
-                completed BOOLEAN DEFAULT FALSE
+                name VARCHAR(100) NOT NULL,
+                price DECIMAL(10, 2) NOT NULL
             );
         ''')
         conn.commit()
+        
+        cur.execute('SELECT * FROM products;')
+        products = cur.fetchall()
         cur.close()
         conn.close()
-        print("Database table 'todos' initialized successfully!")
+        return render_template('index.html', products=products)
     except Exception as e:
-        print(f"Error initializing database: {e}")
-
-# Automatically initialize database when Gunicorn loads the module
-init_db()
-
-@app.route('/')
-def index():
-    conn = get_db_connection()
-    cur = conn.cursor()
-    cur.execute('SELECT id, task, completed FROM todos;')
-    todos = cur.fetchall()
-    cur.close()
-    conn.close()
-    return render_template('index.html', todos=todos)
+        return f"Database connection error: {str(e)}"
 
 @app.route('/add', methods=['POST'])
-def add():
-    task = request.form.get('task')
-    if task:
+def add_product():
+    name = request.form.get('name')
+    price = request.form.get('price')
+    if name and price:
         conn = get_db_connection()
         cur = conn.cursor()
-        cur.execute('INSERT INTO todos (task) VALUES (%s);', (task,))
+        cur.execute('INSERT INTO products (name, price) VALUES (%s, %s);', (name, price))
         conn.commit()
         cur.close()
         conn.close()
-    return redirect(url_for('index'))
-
-@app.route('/delete/<int:todo_id>', methods=['POST'])
-def delete(todo_id):
-    conn = get_db_connection()
-    cur = conn.cursor()
-    cur.execute('DELETE FROM todos WHERE id = %s;', (todo_id,))
-    conn.commit()
-    cur.close()
-    conn.close()
     return redirect(url_for('index'))
 
 if __name__ == '__main__':

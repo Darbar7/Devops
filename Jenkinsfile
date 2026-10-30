@@ -8,13 +8,13 @@ pipeline {
         }
         stage('Build Docker Image') {
             steps {
+                sh 'ls -la'
                 sh 'docker build -t aws-devops-ecommerce-app:latest .'
             }
         }
         stage('Run Unit & Integration Tests') {
             steps {
                 sh 'echo "Running tests..."'
-                // Add your test commands here if applicable
             }
         }
     }

@@ -8,7 +8,6 @@ pipeline {
         }
         stage('Build Docker Image') {
             steps {
-                // Build specifying the subfolder path
                 sh 'docker build -t aws-devops-ecommerce-app:latest ./aws-devops-ecommerce'
             }
         }
@@ -17,14 +16,19 @@ pipeline {
                 sh 'echo "Running tests..."'
             }
         }
+        stage('Deploy Locally') {
+            steps {
+                sh 'docker compose -f ./aws-devops-ecommerce/docker-compose.yml up -d --build'
+            }
+        }
     }
     post {
         always {
-            // Point docker-compose to the subfolder config file
-            sh 'docker compose -f ./aws-devops-ecommerce/docker-compose.yml down || true'
+            // Optional cleanup if needed later, but left out here so your containers stay running for you to test!
+            echo 'Pipeline finished execution.'
         }
         success {
-            echo 'Pipeline completed successfully!'
+            echo 'Pipeline completed successfully and application is deployed locally!'
         }
         failure {
             echo 'Pipeline failed. Check container logs for errors.'

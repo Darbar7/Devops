@@ -1,0 +1,57 @@
+services:
+  nginx:
+    build: ./nginx
+    container_name: ecommerce_nginx
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    networks:
+      - app-net
+
+  backend:
+    build: ./backend
+    container_name: ecommerce_backend
+    environment:
+      - DB_HOST=db
+      - DB_NAME=ecommerce
+      - DB_USER=postgres
+      - DB_PASSWORD=secretpassword
+      - REDIS_HOST=redis
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    networks:
+      - app-net
+
+  db:
+    image: postgres:15-alpine
+    container_name: ecommerce_db
+    environment:
+      - POSTGRES_DB=ecommerce
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=secretpassword
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - app-net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d ecommerce"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: ecommerce_redis
+    networks:
+      - app-net
+
+volumes:
+  postgres_data:
+
+networks:
+  app-net:
+    driver: bridge

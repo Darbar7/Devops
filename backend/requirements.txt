@@ -1,8 +1,4 @@
-<<<<<<< HEAD
 flask==3.0.3
 psycopg2-binary==2.9.9
 redis==5.0.1
-=======
-Flask==3.0.2
 gunicorn==21.2.0
->>>>>>> 154f3f84859023a8807472aec3961b218cc61e85

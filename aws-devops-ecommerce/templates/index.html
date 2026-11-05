@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>DevOps To-Do App</title>
+    <style>
+        body { font-family: Arial, sans-serif; background: #f4f4f9; margin: 0; padding: 50px; }
+        .container { max-width: 500px; background: white; padding: 20px; border-radius: 8px; box-shadow: 0px 0px 10px rgba(0,0,0,0.1); margin: auto; }
+        h2 { text-align: center; color: #333; }
+        form { display: flex; gap: 10px; margin-bottom: 20px; }
+        input[type="text"] { flex: 1; padding: 10px; border: 1px solid #ccc; border-radius: 4px; }
+        button { padding: 10px 15px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; }
+        button:hover { background: #0056b3; }
+        ul { list-style: none; padding: 0; }
+        li { display: flex; justify-content: space-between; align-items: center; background: #f9f9f9; padding: 10px; margin-bottom: 8px; border-radius: 4px; border-left: 4px solid #007bff; }
+        .delete-btn { background: #dc3545; padding: 5px 10px; color: white; border: none; border-radius: 4px; cursor: pointer; }
+        .delete-btn:hover { background: #bd2130; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>AWS DevOps To-Do List</h2>
+        <form action="/add" method="POST">
+            <input type="text" name="task" placeholder="Enter a new task..." required>
+            <button type="submit">Add Task</button>
+        </form>
+        <ul>
+            {% for todo in todos %}
+                <li>
+                    <span>{{ todo[1] }}</span>
+                    <form action="/delete/{{ todo[0] }}" method="POST" style="margin:0;">
+                        <button type="submit" class="delete-btn">Delete</button>
+                    </form>
+                </li>
+            {% endfor %}
+        </ul>
+    </div>
+</body>
+</html>

@@ -1,62 +1,42 @@
-<<<<<<< HEAD
-import os
 from flask import Flask
-import psycopg2
+import os
 import redis
+import psycopg2
 
 app = Flask(__name__)
 
-# Read configuration from environment variables
-DB_HOST = os.getenv("DB_HOST", "db")
-DB_NAME = os.getenv("DB_NAME", "ecommerce")
-DB_USER = os.getenv("DB_USER", "postgres")
-DB_PASSWORD = os.getenv("DB_PASSWORD", "postgres")
+# Environment variables for database and redis connections
+DB_HOST = os.environ.get('DB_HOST', 'db')
+DB_NAME = os.environ.get('DB_NAME', 'ecommerce')
+DB_USER = os.environ.get('DB_USER', 'postgres')
+DB_PASSWORD = os.environ.get('DB_PASSWORD', 'postgres')
 
-REDIS_HOST = os.getenv("REDIS_HOST", "redis")
-REDIS_PORT = int(os.getenv("REDIS_PORT", 6379))
-
-@app.route("/")
-def home():
-    try:
-        # Test PostgreSQL connection
-        conn = psycopg2.connect(
-            host=DB_HOST, database=DB_NAME, user=DB_USER, password=DB_PASSWORD
-        )
-        conn.close()
-        db_status = "Connected to PostgreSQL successfully!"
-    except Exception as e:
-        db_status = f"PostgreSQL Connection Error: {e}"
-
-    try:
-        # Test Redis connection
-        r = redis.Redis(host=REDIS_HOST, port=REDIS_PORT, socket_timeout=2)
-        r.ping()
-        redis_status = "Connected to Redis successfully!"
-    except Exception as e:
-        redis_status = f"Redis Connection Error: {e}"
-
-    return f"<h1>DevOps E-Commerce Backend</h1><p>{db_status}</p><p>{redis_status}</p>"
-
-if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000)
-=======
-from flask import Flask, jsonify
-
-app = Flask(__name__)
+REDIS_HOST = os.environ.get('REDIS_HOST', 'redis')
+REDIS_PORT = int(os.environ.get('REDIS_PORT', 6379))
 
 @app.route('/')
 def home():
-    return jsonify({"message": "Welcome to the E-Commerce DevOps API!"})
+    return "Welcome to the E-Commerce DevOps Application!"
 
-@app.route('/products', methods=['GET'])
-def get_products():
-    products = [
-        {"id": 1, "name": "Mechanical Keyboard", "price": 49.99},
-        {"id": 2, "name": "Wireless Mouse", "price": 29.99},
-        {"id": 3, "name": "USB-C Hub", "price": 19.99}
-    ]
-    return jsonify(products)
+@app.route('/health')
+def health():
+    try:
+        # Test Database Connection
+        conn = psycopg2.connect(
+            host=DB_HOST,
+            database=DB_NAME,
+            user=DB_USER,
+            password=DB_PASSWORD
+        )
+        conn.close()
+        
+        # Test Redis Connection
+        r = redis.Redis(host=REDIS_HOST, port=REDIS_PORT, socket_timeout=2)
+        r.ping()
+        
+        return {"status": "healthy", "database": "connected", "redis": "connected"}, 200
+    except Exception as e:
+        return {"status": "unhealthy", "error": str(e)}, 500
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000)
->>>>>>> 154f3f84859023a8807472aec3961b218cc61e85
+    app.run(host='0.0.0.0', port=5000, debug=True)

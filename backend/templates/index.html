@@ -1,7 +1,75 @@
-from flask import Flask, render_template
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>E-Commerce DevOps Store</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 40px; background: #f4f7f6; color: #333; }
+        .container { max-width: 800px; margin: auto; background: white; padding: 30px; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+        h1 { color: #007BFF; }
+        .product-card { border: 1px solid #ddd; padding: 15px; margin-bottom: 10px; border-radius: 5px; display: flex; justify-content: space-between; align-items: center; }
+        button { background: #007BFF; color: white; border: none; padding: 8px 15px; border-radius: 4px; cursor: pointer; }
+        button:hover { background: #0056b3; }
+        .checkout-btn { background: #28a745; margin-top: 20px; width: 100%; padding: 12px; font-size: 16px; }
+        .checkout-btn:hover { background: #218838; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Welcome to the E-Commerce DevOps Store!</h1>
+        <p>Containerized with Docker, Nginx, PostgreSQL, and Redis.</p>
+        <hr>
+        <h2>Available Products</h2>
+        <div id="product-list">
+            {% for product in products %}
+            <div class="product-card">
+                <div>
+                    <strong>{{ product.name }}</strong> - ${{ product.price }}
+                </div>
+                <button onclick="addToCart({{ product.id }})">Add to Cart</button>
+            </div>
+            {% else %}
+            <p>No products available yet. Use the API to add some!</p>
+            {% endfor %}
+        </div>
 
-app = Flask(__name__)
+        <button class="checkout-btn" onclick="checkoutCart()">Complete Checkout</button>
+    </div>
 
-@app.route('/')
-def home():
-    return render_template('index.html')
+    <script>
+        function addToCart(productId) {
+            const username = prompt("Enter your username for the shopping cart session:");
+            if (!username) return;
+
+            fetch(`/api/cart/${username}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ product_id: productId, quantity: 1 })
+            })
+            .then(res => res.json())
+            .then(data => alert(data.message))
+            .catch(err => console.error('Error:', err));
+        }
+
+        function checkoutCart() {
+            const username = prompt("Enter your username to checkout your cart:");
+            if (!username) return;
+
+            fetch('/api/checkout', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username: username })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.error) {
+                    alert("Error: " + data.error);
+                } else {
+                    alert(`Success! Order ID: ${data.order_id} placed for $${data.total_amount}`);
+                }
+            })
+            .catch(err => console.error('Error:', err));
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,32 @@
+pipeline {
+    agent any
+
+    environment {
+        KUBECONFIG = 'C:\\Users\\<Your-Username>\\.kube\\config'
+        IMAGE_NAME = 'naguru/ecommerce-backend'
+    }
+
+    stages {
+        stage('Checkout') {
+            steps {
+                checkout scm
+            }
+        }
+
+        stage('Build Docker Image') {
+            steps {
+                script {
+                    bat "docker build -t %IMAGE_NAME%:latest ."
+                }
+            }
+        }
+
+        stage('Deploy to Kubernetes via Helm') {
+            steps {
+                script {
+                    bat "helm upgrade --install ecommerce-release ./ecommerce-chart"
+                }
+            }
+        }
+    }
+}
